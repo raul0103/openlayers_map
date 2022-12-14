@@ -47,43 +47,21 @@ class MapController extends Controller
 
     public function getSales()
     {
-        return  [
-            [
+        $out = [];
+
+        for ($i = 1; $i <= 20000; $i++) {
+            $out[] = [
                 "type" => "Feature",
                 "geometry" => [
                     "type" => "Point",
-                    "coordinates" => [30.28, 59.88]
+                    "coordinates" => [rand(305, 309) / 10.1, rand(603, 607) / 10.1]
                 ],
                 "properties" =>  [
-                    "id" => 1,
-                    "category" => 10,
-                    "summ" => 100000
+                    "id" => $i,
+                    "summ" => rand(23000, 99000)
                 ]
-            ],
-            [
-                "type" => "Feature",
-                "geometry" => [
-                    "type" => "Point",
-                    "coordinates" => [30.29, 59.89]
-                ],
-                "properties" =>  [
-                    "id" => 2,
-                    "category" => 10,
-                    "summ" => 67000,
-                ]
-            ],
-            [
-                "type" => "Feature",
-                "geometry" => [
-                    "type" => "Point",
-                    "coordinates" => [30.50, 59.76]
-                ],
-                "properties" =>  [
-                    "id" => 3,
-                    "category" => 17,
-                    "summ" => 23000,
-                ]
-            ],
-        ];
+            ];
+        }
+        return $out;
     }
 }

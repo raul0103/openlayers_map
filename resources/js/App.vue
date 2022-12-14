@@ -60,23 +60,23 @@
                 </ol-vector-layer>
 
                 <!-- Координаты продаж -->
-                <ol-vector-layer>
+                <!-- <ol-vector-layer>
                     <ol-source-vector :features="sales">
                         <ol-style>
-                            <ol-style-circle :radius="10">
-                                <ol-style-fill color="green"></ol-style-fill>
+                            <ol-style-circle :radius="3">
+                                <ol-style-fill color="red"></ol-style-fill>
                             </ol-style-circle>
                         </ol-style>
                     </ol-source-vector>
 
                     <ol-interaction-select @select="saleSelected">
                         <ol-style>
-                            <ol-style-circle :radius="10">
+                            <ol-style-circle :radius="3">
                                 <ol-style-fill color="green"></ol-style-fill>
                             </ol-style-circle>
                         </ol-style>
                     </ol-interaction-select>
-                </ol-vector-layer>
+                </ol-vector-layer> -->
             </ol-map>
         </div>
     </div>
@@ -111,8 +111,10 @@ export default {
         // Пересекается ли координата
         intersectsCoordinate() {
             this.regions.forEach((region) => {
-                const polygonGeometry = region.getGeometry();
+                // Очистили массив, он мог сохраниться файл regions.json
+                region.setProperties({ region_sales: [] });
 
+                const polygonGeometry = region.getGeometry();
                 const sales_features = new GeoJSON().writeFeaturesObject(
                     this.sales
                 );
@@ -125,14 +127,12 @@ export default {
                     // Записали данные Если пересекается
                     if (intersects) {
                         const region_sales =
-                            region.getProperties().region_sales ?? [];
-                        if (region_sales) {
-                            const find_sale = region_sales.find(
-                                (region_sale) =>
-                                    region_sale.id === sale.properties.id
-                            );
-                            if (!find_sale) region_sales.push(sale.properties);
-                        }
+                            region.getProperties().region_sales;
+                        const find_sale = region_sales.find(
+                            (region_sale) =>
+                                region_sale.id === sale.properties.id
+                        );
+                        if (!find_sale) region_sales.push(sale.properties);
 
                         region.setProperties({ region_sales });
                     }
