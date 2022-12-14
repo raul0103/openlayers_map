@@ -5,11 +5,11 @@ import { useAlertStore } from "@/stores/alert";
 export default function () {
     const alert_store = useAlertStore();
 
-    let regions = ref([]);
+    let regions = ref(null);
     let selected_region = ref(null);
     let geojsonObject = {
         type: "FeatureCollection",
-        features: regions.value,
+        features: null,
     };
 
     // Удаление элементов
@@ -24,9 +24,9 @@ export default function () {
             geojsonObject.features = drawn_regions.features.filter(
                 (drawn_regions) => drawn_regions.id !== region.getId()
             );
-
-            regions.value = new GeoJSON().readFeatures(geojsonObject);
         });
+
+        regions.value = new GeoJSON().readFeatures(geojsonObject);
     };
 
     // Сохранить массив регионов

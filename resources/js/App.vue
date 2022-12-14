@@ -9,6 +9,7 @@
             </li>
         </ul>
         <div style="width: 1000px; height: 800px">
+            <button @click="intersectsCoordinate">Показать пересечения</button>
             <button @click="modifyControl">
                 {{
                     modify_enabled
@@ -36,6 +37,7 @@
                     <ol-source-osm />
                 </ol-tile-layer>
 
+                <!-- Координаты регионов -->
                 <ol-vector-layer>
                     <ol-source-vector :features="regions">
                         <ol-interaction-modify v-if="modify_enabled" />
@@ -48,89 +50,95 @@
                         />
                         <ol-interaction-snap v-if="modify_enabled" />
                     </ol-source-vector>
+
+                    <ol-interaction-select @select="regionSelected">
+                        <ol-style>
+                            <ol-style-stroke :color="'red'" :width="2" />
+                            <ol-style-fill :color="`rgba(255, 0, 0, 0.4)`" />
+                        </ol-style>
+                    </ol-interaction-select>
                 </ol-vector-layer>
 
-                <ol-interaction-select @select="regionSelected">
-                    <ol-style>
-                        <ol-style-stroke
-                            :color="'red'"
-                            :width="2"
-                        ></ol-style-stroke>
-                        <ol-style-fill
-                            :color="`rgba(255, 0, 0, 0.4)`"
-                        ></ol-style-fill>
-                    </ol-style>
-                </ol-interaction-select>
+                <!-- Координаты продаж -->
+                <ol-vector-layer>
+                    <ol-source-vector :features="sales">
+                        <ol-style>
+                            <ol-style-circle :radius="10">
+                                <ol-style-fill color="green"></ol-style-fill>
+                            </ol-style-circle>
+                        </ol-style>
+                    </ol-source-vector>
+
+                    <ol-interaction-select @select="saleSelected">
+                        <ol-style>
+                            <ol-style-circle :radius="10">
+                                <ol-style-fill color="green"></ol-style-fill>
+                            </ol-style-circle>
+                        </ol-style>
+                    </ol-interaction-select>
+                </ol-vector-layer>
             </ol-map>
         </div>
     </div>
 </template>
 
 <script>
-import { Fill, Stroke, Style, Circle as CircleStyle } from "ol/style";
-import useMapControls from "@/composition/useMapControls";
-import useRegionActions from "@/composition/useRegionActions";
+import { GeoJSON } from "ol/format";
 import Alert from "./components/Alert.vue";
+import useMapControls from "@/composition/useMapControls";
+import useRegions from "@/composition/useRegions";
+import useSales from "@/composition/useSales";
 
 export default {
     components: { Alert },
     setup() {
-        const map_controls = useMapControls();
-        const region_actions = useRegionActions();
+        const use_map_controls = useMapControls();
+        const use_regions = useRegions();
+        const use_sales = useSales();
 
-        return Object.assign(map_controls, region_actions);
+        return Object.assign(use_map_controls, use_regions, use_sales);
     },
     data() {
         return {
             config: {
                 projection: "EPSG:4326",
-                center: [-102.13121, 40.2436],
-                zoom: 5,
+                center: [30.31413, 59.93863],
+                zoom: 10,
             },
         };
     },
     methods: {
-        // Добавляем стили
-        setFeatureStyle() {
-            // Для полигона
-
-            // const selected_polygon_style = new Style({
-            //   radius: 10,
-            //   stroke: new Stroke({
-            //     color: "red",
-            //     width: 3,
-            //   }),
-            //   fill: new Fill({
-            //     color: "rgba(0, 0, 255, 0.4)",
-            //   }),
-            // });
-
-            // Для точки
-            const selected_polygon_style = new Style({
-                image: new CircleStyle({
-                    radius: 10,
-                    fill: new Fill({ color: "red" }),
-                    stroke: new Stroke({ color: "#bada55", width: 1 }),
-                }),
-            });
-
-            this.regions.forEach((feature) => {
-                if (feature.id_ === "point") {
-                    feature.setStyle(selected_polygon_style);
-                }
-            });
-        },
-
         // Пересекается ли координата
         intersectsCoordinate() {
-            this.regions.forEach((feature) => {
-                const polygonGeometry = feature.getGeometry();
-                const coords = features[2].geometry.coordinates;
-                const result = polygonGeometry.intersectsCoordinate(coords);
+            this.regions.forEach((region) => {
+                const polygonGeometry = region.getGeometry();
 
-                if (result) {
-                    feature.setProperties({ test: 123 }); // Записали данные что есть координата
-                }
+                const sales_features = new GeoJSON().writeFeaturesObject(
+                    this.sales
+                );
+
+                sales_features.features.forEach((sale) => {
+                    const coords = sale.geometry.coordinates;
+                    const intersects =
+                        polygonGeometry.intersectsCoordinate(coords);
+
+                    // Записали данные Если пересекается
+                    if (intersects) {
+                        const region_sales =
+                            region.getProperties().region_sales ?? [];
+                        if (region_sales) {
+                            const find_sale = region_sales.find(
+                                (region_sale) =>
+                                    region_sale.id === sale.properties.id
+                            );
+                            if (!find_sale) region_sales.push(sale.properties);
+                        }
+
+                        region.setProperties({ region_sales });
+                    }
+                });
+
+                console.log(region.getId(), region.getProperties());
             });
         },
 
@@ -142,13 +150,6 @@ export default {
             this.selected_region = event.feature;
 
             this.draw_enabled = false;
-        },
-
-        // Получаем точки которые пересекаются с регионом
-        getIntersects() {
-            this.selected_region.forEach((region) => {
-                console.log(region.getProperties());
-            });
         },
     },
 };

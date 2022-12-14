@@ -9,3 +9,4 @@ Route::get('/', function () {
 
 Route::get('/regions', [MapController::class, 'getRegions']);
 Route::post('/regions', [MapController::class, 'saveRegions']);
+Route::get('/sales', [MapController::class, 'getSales']);

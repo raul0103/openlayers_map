@@ -44,4 +44,46 @@ class MapController extends Controller
             return ["status" => false, "message" => "Ошибка записи регионов"];
         }
     }
+
+    public function getSales()
+    {
+        return  [
+            [
+                "type" => "Feature",
+                "geometry" => [
+                    "type" => "Point",
+                    "coordinates" => [30.28, 59.88]
+                ],
+                "properties" =>  [
+                    "id" => 1,
+                    "category" => 10,
+                    "summ" => 100000
+                ]
+            ],
+            [
+                "type" => "Feature",
+                "geometry" => [
+                    "type" => "Point",
+                    "coordinates" => [30.29, 59.89]
+                ],
+                "properties" =>  [
+                    "id" => 2,
+                    "category" => 10,
+                    "summ" => 67000,
+                ]
+            ],
+            [
+                "type" => "Feature",
+                "geometry" => [
+                    "type" => "Point",
+                    "coordinates" => [30.50, 59.76]
+                ],
+                "properties" =>  [
+                    "id" => 3,
+                    "category" => 17,
+                    "summ" => 23000,
+                ]
+            ],
+        ];
+    }
 }
