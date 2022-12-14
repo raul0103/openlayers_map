@@ -59,7 +59,7 @@
                     </ol-interaction-select>
                 </ol-vector-layer>
 
-                <!-- Координаты продаж -->
+                <!-- Координаты продаж. Если больше 10к тогда лагает. Поэтому не отображать-->
                 <!-- <ol-vector-layer>
                     <ol-source-vector :features="sales">
                         <ol-style>
